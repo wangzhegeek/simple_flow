@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "simpleflow/activation.h"
+#include "activation.h"
 #include <cmath>
 #include <vector>
 #include <memory>

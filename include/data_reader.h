@@ -1,7 +1,7 @@
 #ifndef SIMPLEFLOW_DATA_READER_H
 #define SIMPLEFLOW_DATA_READER_H
 
-#include "simpleflow/types.h"
+#include "types.h"
 #include <fstream>
 #include <mutex>
 #include <memory>

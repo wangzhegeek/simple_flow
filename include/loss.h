@@ -1,7 +1,7 @@
 #ifndef SIMPLEFLOW_LOSS_H
 #define SIMPLEFLOW_LOSS_H
 
-#include "simpleflow/types.h"
+#include "types.h"
 #include <memory>
 
 namespace simpleflow {

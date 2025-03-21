@@ -1,7 +1,7 @@
 #ifndef SIMPLEFLOW_UTILS_MATH_UTIL_H
 #define SIMPLEFLOW_UTILS_MATH_UTIL_H
 
-#include "simpleflow/types.h"
+#include "types.h"
 #include <cmath>
 #include <cblas.h>
 

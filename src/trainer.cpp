@@ -1,4 +1,4 @@
-#include "simpleflow/trainer.h"
+#include "trainer.h"
 #include <iostream>
 #include <iomanip>
 #include <chrono>
@@ -189,10 +189,11 @@ Float Trainer::TrainEpoch(std::shared_ptr<DataReader> train_reader, Int current_
         FloatVector predictions;
         model_->Forward(batch, predictions);
         
-        // 计算标签
+        // 计算标签，将-1转换为0，适应sigmoid激活函数
         FloatVector targets(batch.size());
         for (size_t i = 0; i < batch.size(); ++i) {
-            targets[i] = batch[i].label;
+            // 转换标签，-1 -> 0, 1 -> 1
+            targets[i] = (batch[i].label == -1) ? 0.0f : batch[i].label;
         }
         
         // 更新指标
@@ -235,10 +236,11 @@ Float Trainer::TrainBatch(const Batch& batch) {
     FloatVector predictions;
     model_->Forward(batch, predictions);
     
-    // 计算标签
+    // 计算标签，将-1转换为0，适应sigmoid激活函数
     FloatVector targets(batch.size());
     for (size_t i = 0; i < batch.size(); ++i) {
-        targets[i] = batch[i].label;
+        // 转换标签，-1 -> 0, 1 -> 1
+        targets[i] = (batch[i].label == -1) ? 0.0f : batch[i].label;
     }
     
     // 检查预测值是否在合理范围内（对于二分类问题）
@@ -305,10 +307,11 @@ void Trainer::Evaluate(std::shared_ptr<DataReader> data_reader, const std::vecto
         FloatVector predictions;
         model_->Forward(batch, predictions);
         
-        // 计算标签
+        // 计算标签，将-1转换为0，适应sigmoid激活函数
         FloatVector targets(batch.size());
         for (size_t i = 0; i < batch.size(); ++i) {
-            targets[i] = batch[i].label;
+            // 转换标签，-1 -> 0, 1 -> 1
+            targets[i] = (batch[i].label == -1) ? 0.0f : batch[i].label;
         }
         
         // 更新所有指标

@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
-#include "simpleflow/data_reader.h"
-#include "simpleflow/types.h"
+#include "data_reader.h"
+#include "types.h"
 #include <fstream>
 #include <cstdio>
 #include <memory>

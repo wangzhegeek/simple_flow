@@ -1,10 +1,10 @@
 #include <gtest/gtest.h>
-#include "simpleflow/model.h"
-#include "simpleflow/activation.h"
-#include "simpleflow/utils.h"
-#include "simpleflow/optimizer.h"
-#include "simpleflow/models/lr.h"
-#include "simpleflow/models/fm.h"
+#include "model.h"
+#include "activation.h"
+#include "utils.h"
+#include "optimizer.h"
+#include "models/lr.h"
+#include "models/fm.h"
 #include <memory>
 #include <vector>
 #include <cmath>

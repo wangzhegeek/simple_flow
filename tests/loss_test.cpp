@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "simpleflow/loss.h"
+#include "loss.h"
 #include <cmath>
 #include <vector>
 #include <memory>

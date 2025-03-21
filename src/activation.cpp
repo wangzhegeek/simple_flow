@@ -1,4 +1,4 @@
-#include "simpleflow/activation.h"
+#include "activation.h"
 #include <cmath>
 #include <algorithm>
 #include <stdexcept>

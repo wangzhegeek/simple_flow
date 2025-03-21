@@ -1,8 +1,9 @@
-#include "simpleflow/model.h"
-#include "simpleflow/models/lr.h"
-#include "simpleflow/models/fm.h"
+#include "model.h"
+#include "models/lr.h"
+#include "models/fm.h"
 #include <fstream>
 #include <stdexcept>
+#include <typeinfo>
 
 namespace simpleflow {
 
@@ -30,8 +31,34 @@ void Model::Backward(const Batch& batch, const FloatVector& gradients, std::shar
         throw std::runtime_error("Batch size and gradients size mismatch");
     }
     
-    for (size_t i = 0; i < batch.size(); ++i) {
-        Backward(batch[i].features, gradients[i], optimizer);
+    // 获取模型类名，检查是否为FMModel
+    bool is_fm_model = false;
+    try {
+        auto* fm_model = dynamic_cast<FMModel*>(this);
+        is_fm_model = (fm_model != nullptr);
+    } catch (...) {
+        is_fm_model = false;
+    }
+    
+    // 如果是FMModel，尝试用新接口
+    if (is_fm_model) {
+        // 先获取预测值
+        FloatVector predictions;
+        predictions.resize(batch.size());
+        for (size_t i = 0; i < batch.size(); ++i) {
+            predictions[i] = Forward(batch[i].features);
+        }
+        
+        // 使用模型的新接口，直接传入预测值和标签
+        auto* fm_model = dynamic_cast<FMModel*>(this);
+        for (size_t i = 0; i < batch.size(); ++i) {
+            fm_model->Backward(batch[i].features, predictions[i], batch[i].label, optimizer.get());
+        }
+    } else {
+        // 其他模型使用原有接口
+        for (size_t i = 0; i < batch.size(); ++i) {
+            Backward(batch[i].features, gradients[i], optimizer);
+        }
     }
 }
 

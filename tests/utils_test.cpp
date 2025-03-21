@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
-#include "simpleflow/utils/math_util.h"
-#include "simpleflow/utils/config_parser.h"
+#include "utils/math_util.h"
+#include "utils/config_parser.h"
 #include <cmath>
 #include <vector>
 #include <fstream>

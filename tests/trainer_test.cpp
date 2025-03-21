@@ -1,10 +1,10 @@
 #include <gtest/gtest.h>
-#include "simpleflow/trainer.h"
-#include "simpleflow/model.h"
-#include "simpleflow/optimizer.h"
-#include "simpleflow/loss.h"
-#include "simpleflow/metric.h"
-#include "simpleflow/data_reader.h"
+#include "trainer.h"
+#include "model.h"
+#include "optimizer.h"
+#include "loss.h"
+#include "metric.h"
+#include "data_reader.h"
 #include <memory>
 #include <vector>
 #include <fstream>

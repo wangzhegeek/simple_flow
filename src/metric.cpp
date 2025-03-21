@@ -1,4 +1,4 @@
-#include "simpleflow/metric.h"
+#include "metric.h"
 #include <algorithm>
 #include <cmath>
 #include <numeric>

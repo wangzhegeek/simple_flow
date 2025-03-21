@@ -1,4 +1,4 @@
-#include "simpleflow/loss.h"
+#include "loss.h"
 #include <cmath>
 #include <algorithm>
 #include <stdexcept>

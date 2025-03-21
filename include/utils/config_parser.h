@@ -1,9 +1,10 @@
 #ifndef SIMPLEFLOW_UTILS_CONFIG_PARSER_H
 #define SIMPLEFLOW_UTILS_CONFIG_PARSER_H
 
-#include "simpleflow/types.h"
+#include "types.h"
 #include <unordered_map>
 #include <fstream>
+#include <iostream>
 
 namespace simpleflow {
 namespace utils {
@@ -33,6 +34,13 @@ public:
     
     // 获取所有配置项
     const std::unordered_map<String, String>& GetAll() const;
+    
+    // 打印所有配置参数
+    void PrintAllParameters() const {
+        for (const auto& param : configs_) {
+            std::cout << param.first << " = " << param.second << std::endl;
+        }
+    }
     
 private:
     std::unordered_map<String, String> configs_;

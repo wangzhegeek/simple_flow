@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "simpleflow/metric.h"
+#include "metric.h"
 #include <cmath>
 #include <memory>
 #include <vector>

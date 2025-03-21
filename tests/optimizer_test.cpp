@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "simpleflow/optimizer.h"
+#include "optimizer.h"
 #include <cmath>
 #include <memory>
 #include <vector>

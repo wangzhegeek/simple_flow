@@ -1,7 +1,7 @@
 #ifndef SIMPLEFLOW_METRIC_H
 #define SIMPLEFLOW_METRIC_H
 
-#include "simpleflow/types.h"
+#include "types.h"
 #include <memory>
 
 namespace simpleflow {

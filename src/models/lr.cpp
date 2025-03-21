@@ -1,5 +1,5 @@
-#include "simpleflow/models/lr.h"
-#include "simpleflow/utils/math_util.h"
+#include "models/lr.h"
+#include "utils/math_util.h"
 #include <fstream>
 #include <cmath>
 #include <algorithm>

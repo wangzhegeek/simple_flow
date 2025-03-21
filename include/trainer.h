@@ -1,12 +1,12 @@
 #ifndef SIMPLEFLOW_TRAINER_H
 #define SIMPLEFLOW_TRAINER_H
 
-#include "simpleflow/types.h"
-#include "simpleflow/model.h"
-#include "simpleflow/data_reader.h"
-#include "simpleflow/loss.h"
-#include "simpleflow/optimizer.h"
-#include "simpleflow/metric.h"
+#include "types.h"
+#include "model.h"
+#include "data_reader.h"
+#include "loss.h"
+#include "optimizer.h"
+#include "metric.h"
 #include <memory>
 #include <vector>
 #include <thread>
@@ -16,6 +16,7 @@
 #include <queue>
 #include <functional>
 #include <limits>
+#include <iostream>
 
 namespace simpleflow {
 
@@ -84,6 +85,42 @@ public:
     
     // 设置最小学习率
     void SetMinLearningRate(Float min_lr);
+    
+    // 单个样本的评估
+    Float Evaluate(const Sample& sample, std::shared_ptr<Model> model, std::shared_ptr<Metric> metric) {
+        Float pred = model->Forward(sample.features);
+        metric->Add(pred, sample.label);
+        return metric->Get();
+    }
+    
+    // 数据集的评估
+    Float Evaluate(const std::vector<Sample>& data, std::shared_ptr<Model> model, std::shared_ptr<Metric> metric) {
+        metric->Reset();
+        for (const auto& sample : data) {
+            Float pred = model->Forward(sample.features);
+            metric->Add(pred, sample.label);
+        }
+        return metric->Get();
+    }
+    
+    // 打印训练超参数
+    void PrintHyperparameters() const {
+        std::cout << "======= 训练超参数 =======" << std::endl;
+        std::cout << "批次大小 (batch_size): " << batch_size_ << std::endl;
+        std::cout << "训练轮数 (epochs): " << epoch_num_ << std::endl;
+        std::cout << "线程数 (num_threads): " << config_.num_threads << std::endl;
+        std::cout << "学习率 (learning_rate): " << optimizer_->GetLearningRate() << std::endl;
+        std::cout << "L2正则化 (l2_reg): " << optimizer_->GetL2Reg() << std::endl;
+        std::cout << "学习率衰减轮数 (lr_decay_epochs): " << lr_decay_epochs_ << std::endl;
+        std::cout << "学习率衰减因子 (lr_decay_factor): " << lr_decay_factor_ << std::endl;
+        std::cout << "最小学习率 (min_learning_rate): " << min_learning_rate_ << std::endl;
+        std::cout << "随机种子 (random_seed): " << random_seed_ << std::endl;
+        std::cout << "打乱数据 (shuffle): " << (shuffle_ ? "true" : "false") << std::endl;
+        std::cout << "日志打印频率 (log_interval): " << log_interval_ << std::endl;
+        std::cout << "详细程度 (verbose): " << verbose_ << std::endl;
+        std::cout << "模型保存路径 (model_save_path): " << config_.model_save_path << std::endl;
+        std::cout << "======= 超参数结束 =======" << std::endl;
+    }
     
 private:
     std::shared_ptr<Model> model_;

@@ -1,7 +1,7 @@
 #ifndef SIMPLEFLOW_ACTIVATION_H
 #define SIMPLEFLOW_ACTIVATION_H
 
-#include "simpleflow/types.h"
+#include "types.h"
 #include <memory>
 
 namespace simpleflow {

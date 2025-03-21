@@ -1,7 +1,7 @@
 #ifndef SIMPLEFLOW_OPTIMIZER_H
 #define SIMPLEFLOW_OPTIMIZER_H
 
-#include "simpleflow/types.h"
+#include "types.h"
 #include <memory>
 #include <unordered_map>
 

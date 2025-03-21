@@ -1,7 +1,7 @@
 #ifndef SIMPLEFLOW_MODELS_LR_H
 #define SIMPLEFLOW_MODELS_LR_H
 
-#include "simpleflow/model.h"
+#include "../model.h"
 #include <unordered_map>
 #include <random>
 #include <mutex>

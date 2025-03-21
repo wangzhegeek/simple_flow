@@ -1,8 +1,8 @@
 #ifndef SIMPLEFLOW_MODELS_FM_H
 #define SIMPLEFLOW_MODELS_FM_H
 
-#include "simpleflow/model.h"
-#include "simpleflow/loss.h"
+#include "../model.h"
+#include "../loss.h"
 #include <unordered_map>
 #include <random>
 #include <mutex>

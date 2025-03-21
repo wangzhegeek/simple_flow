@@ -1,4 +1,4 @@
-#include "simpleflow/utils/math_util.h"
+#include "utils/math_util.h"
 #include <cmath>
 #include <cblas.h>
 #include <algorithm>

@@ -1,9 +1,9 @@
 #ifndef SIMPLEFLOW_MODEL_H
 #define SIMPLEFLOW_MODEL_H
 
-#include "simpleflow/types.h"
-#include "simpleflow/optimizer.h"
-#include "simpleflow/activation.h"
+#include "types.h"
+#include "optimizer.h"
+#include "activation.h"
 #include <memory>
 #include <unordered_map>
 #include <mutex>

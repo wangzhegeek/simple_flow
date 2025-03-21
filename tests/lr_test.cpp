@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
-#include "simpleflow/models/lr.h"
-#include "simpleflow/activation.h"
-#include "simpleflow/optimizer.h"
+#include "models/lr.h"
+#include "activation.h"
+#include "optimizer.h"
 #include <memory>
 #include <vector>
 #include <cmath>
