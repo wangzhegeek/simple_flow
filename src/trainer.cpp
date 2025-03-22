@@ -5,6 +5,10 @@
 #include <algorithm>
 #include <memory>
 #include <cmath>
+#include <thread>
+#include <limits>
+#include <functional>
+#include <mutex>
 
 namespace simpleflow {
 
@@ -167,35 +171,104 @@ Float Trainer::TrainEpoch(std::shared_ptr<DataReader> train_reader, Int current_
         metric->Reset();
     }
     
-    Batch batch;
-    while (train_reader->NextBatch(batch)) {
-        Float batch_loss = TrainBatch(batch);
-        total_loss += batch_loss;
-        ++batch_count;
-        
-        // 前向传播获取预测结果，用于更新指标
+    // 用于存储多线程处理的批次结果
+    struct BatchResult {
+        Float loss;
         FloatVector predictions;
-        model_->Forward(batch, predictions);
-        
-        // 为指标计算准备标签
-        FloatVector labels(batch.size());
-        for (size_t i = 0; i < batch.size(); ++i) {
-            labels[i] = batch[i].label;
+        Batch batch; // 存储对应的批次数据
+        bool ready;
+    };
+    
+    size_t max_batches_in_flight = std::max(1u, std::thread::hardware_concurrency());
+    if (config_.num_threads > 0) {
+        max_batches_in_flight = config_.num_threads;
+    }
+    
+    std::vector<std::shared_ptr<BatchResult>> batch_results;
+    std::mutex results_mutex;
+    
+    // 读取多个批次并并行处理
+    bool has_more_batches = true;
+    size_t batches_submitted = 0;
+    size_t batches_processed = 0;
+    
+    while (has_more_batches || batches_processed < batches_submitted) {
+        // 提交新批次到线程池，直到达到最大并行数或没有更多数据
+        while (has_more_batches && (batches_submitted - batches_processed) < max_batches_in_flight) {
+            Batch new_batch;
+            has_more_batches = train_reader->NextBatch(new_batch);
+            
+            if (!has_more_batches || new_batch.empty()) {
+                break;
+            }
+            
+            // 创建新的批次结果对象
+            auto result = std::make_shared<BatchResult>();
+            result->ready = false;
+            result->batch = new_batch;  // 存储批次数据
+            
+            {
+                std::lock_guard<std::mutex> lock(results_mutex);
+                batch_results.push_back(result);
+            }
+            
+            // 将批次送入线程池处理
+            Batch batch_copy = new_batch; // 创建副本以避免引用问题
+            auto result_ptr = result;
+            
+            Enqueue([this, batch_copy, result_ptr]() {
+                // 处理批次同时获取预测结果
+                FloatVector predictions;
+                Float batch_loss = this->TrainBatchInternal(batch_copy, &predictions);
+                
+                // 设置结果
+                result_ptr->loss = batch_loss;
+                result_ptr->predictions = predictions;
+                result_ptr->ready = true;
+            });
+            
+            batches_submitted++;
         }
         
-        // 更新指标
-        for (auto& metric : metrics_) {
-            metric->Add(predictions, labels);
+        // 检查已完成的批次并处理结果
+        {
+            std::lock_guard<std::mutex> lock(results_mutex);
+            for (auto& result : batch_results) {
+                if (result->ready) {
+                    // 累加损失
+                    total_loss += result->loss;
+                    
+                    // 为指标计算准备标签
+                    FloatVector labels(result->batch.size());
+                    for (size_t i = 0; i < result->batch.size(); ++i) {
+                        labels[i] = result->batch[i].label;
+                    }
+                    
+                    // 更新指标
+                    for (auto& metric : metrics_) {
+                        metric->Add(result->predictions, labels);
+                    }
+                    
+                    batches_processed++;
+                    
+                    if (verbose_ > 0 && batches_processed % log_interval_ == 0) {
+                        std::cout << "Epoch " << (current_epoch + 1) << "/" << epoch_num_
+                                << ", Batch " << batches_processed << ", Loss: " 
+                                << std::fixed << std::setprecision(5) << result->loss << std::endl;
+                    }
+                    
+                    result->ready = false; // 重置，允许重用
+                }
+            }
         }
         
-        if (verbose_ > 0 && batch_count % log_interval_ == 0) {
-            std::cout << "Epoch " << (current_epoch + 1) << "/" << epoch_num_
-                      << ", Batch " << batch_count << ", Loss: " << std::fixed << std::setprecision(5) << batch_loss;
-                      
-            std::cout << std::endl;
+        // 避免忙等待
+        if (has_more_batches || batches_processed < batches_submitted) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
         }
     }
     
+    batch_count = batches_processed;
     Float avg_loss = (batch_count > 0) ? total_loss / batch_count : 0.0f;
     
     // 只有在没有设置回调函数时才在这里打印训练结果，避免重复输出
@@ -215,13 +288,29 @@ Float Trainer::TrainEpoch(std::shared_ptr<DataReader> train_reader, Int current_
 }
 
 Float Trainer::TrainBatch(const Batch& batch) {
+    // 为了兼容性，保留此接口并调用内部实现
+    return TrainBatchInternal(batch, nullptr);
+}
+
+// 内部实现，用于多线程训练
+Float Trainer::TrainBatchInternal(const Batch& batch, FloatVector* out_predictions) {
     if (batch.empty()) {
         return 0.0;
     }
     
     // 前向传播
     FloatVector predictions;
-    model_->Forward(batch, predictions);
+    {
+        // 使用锁保护模型的前向传播，因为模型可能被多个线程同时访问
+        // 这里只是读操作，理论上可以使用读写锁优化，但为了简单使用互斥锁
+        std::lock_guard<std::mutex> lock(queue_mutex_);
+        model_->Forward(batch, predictions);
+    }
+    
+    // 如果需要返回预测结果，复制到out_predictions
+    if (out_predictions) {
+        *out_predictions = predictions;
+    }
     
     // 不再需要转换标签，现在标签统一为0/1格式
     FloatVector targets(batch.size());
@@ -248,6 +337,9 @@ Float Trainer::TrainBatch(const Batch& batch) {
         if (std::isnan(predictions[i]) || std::isinf(predictions[i])) {
             std::cerr << "警告: 预测值包含NaN或Inf值，可能出现数值不稳定问题" << std::endl;
             predictions[i] = 0.5f; // 将异常值替换为中间值
+            if (out_predictions) {
+                (*out_predictions)[i] = 0.5f;
+            }
         }
     }
     
@@ -269,8 +361,11 @@ Float Trainer::TrainBatch(const Batch& batch) {
     FloatVector gradients;
     loss_->Gradient(predictions, targets, gradients);
     
-    // 反向传播
-    model_->Backward(batch, gradients, optimizer_);
+    // 反向传播并更新模型参数（需要加锁保护）
+    {
+        std::lock_guard<std::mutex> lock(queue_mutex_);
+        model_->Backward(batch, gradients, optimizer_);
+    }
     
     return batch_loss;
 }
@@ -379,21 +474,6 @@ void Trainer::WorkerThread() {
         
         task();
     }
-}
-
-template<class F, class... Args>
-void Trainer::Enqueue(F&& f, Args&&... args) {
-    {
-        std::unique_lock<std::mutex> lock(queue_mutex_);
-        
-        if (stop_flag_) {
-            throw std::runtime_error("Enqueue on stopped ThreadPool");
-        }
-        
-        task_queue_.emplace(std::bind(std::forward<F>(f), std::forward<Args>(args)...));
-    }
-    
-    condition_.notify_one();
 }
 
 bool Trainer::HandleUnstableTraining(Float current_loss, Float prev_loss) {
