@@ -11,6 +11,7 @@ set(TEST_SOURCES
     optimizer_test.cpp
     model_test.cpp
     utils_test.cpp
+    trainer_test.cpp
     main_test.cpp
 )
 
