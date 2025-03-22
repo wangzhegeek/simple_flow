@@ -81,9 +81,6 @@ protected:
     
     // 计算梯度的辅助方法
     Float CalculateGradient(Float prediction, Float label) const;
-    
-    // 梯度裁剪辅助方法
-    Float ClipGradient(Float gradient, Float clip_value = constants::GRAD_CLIP) const;
 };
 
 // 类型转换辅助函数（用于兼容测试）

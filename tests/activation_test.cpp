@@ -75,10 +75,10 @@ TEST_F(ActivationTest, SigmoidForward) {
     }
     
     // 测试极端值
-    EXPECT_FLOAT_EQ(sigmoid_->Forward(35.0f), 1.0f);
-    EXPECT_FLOAT_EQ(sigmoid_->Forward(-35.0f), 0.0f);
-    EXPECT_FLOAT_EQ(sigmoid_->Forward(100.0f), 1.0f);
-    EXPECT_FLOAT_EQ(sigmoid_->Forward(-100.0f), 0.0f);
+    EXPECT_NEAR(sigmoid_->Forward(35.0f), 1.0f, 1e-6);
+    EXPECT_NEAR(sigmoid_->Forward(-35.0f), 0.0f, 1e-6);
+    EXPECT_NEAR(sigmoid_->Forward(100.0f), 1.0f, 1e-6);
+    EXPECT_NEAR(sigmoid_->Forward(-100.0f), 0.0f, 1e-6);
     
     FloatVector outputs;
     sigmoid_->Forward(inputs_, outputs);

@@ -1,0 +1,62 @@
+# C++项目的.gitignore文件
+
+# 编译生成的文件
+/build/
+/model/
+/bin/
+/lib/
+/out/
+/cmake-build-*/
+
+# IDE配置文件
+.idea/
+.vscode/
+*.code-workspace
+.vs/
+
+# 编译中间文件
+*.o
+*.obj
+*.so
+*.dylib
+*.dll
+*.a
+*.lib
+*.exe
+*.out
+*.app
+
+# CMake生成的文件
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+*.cmake
+!CMakeLists.txt
+
+# 依赖项和包管理工具生成的目录
+/vendor/
+/node_modules/
+
+# 日志和临时文件
+*.log
+*.tmp
+temp/
+/tmp/
+logs/
+
+# 操作系统生成的文件
+.DS_Store
+Thumbs.db
+*.swp
+*~
+
+# 个人配置文件
+config.user.json
+.env
+
+# 数据文件（视项目而定，可能需要保留）
+# /data/
+
+# 其他项目特定忽略
+# 添加项目特有的忽略规则 

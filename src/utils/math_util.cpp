@@ -59,21 +59,6 @@ Float MathUtil::VectorSum(const Float* x, Int size) {
     return sum;
 }
 
-Float MathUtil::Sigmoid(Float x) {
-    return 1.0 / (1.0 + std::exp(-x));
-}
-
-void MathUtil::Sigmoid(const Float* x, Float* y, Int size) {
-    for (Int i = 0; i < size; ++i) {
-        y[i] = Sigmoid(x[i]);
-    }
-}
-
-Float MathUtil::LogLoss(Float prediction, Float target) {
-    Float p = std::max(std::min(prediction, 1.0f - 1e-7f), 1e-7f);
-    return -target * std::log(p) - (1.0f - target) * std::log(1.0f - p);
-}
-
 void MathUtil::XavierInitialization(Float* weights, Int size, Int fan_in, Int fan_out) {
     Float scale = std::sqrt(6.0 / (fan_in + fan_out));
     for (Int i = 0; i < size; ++i) {

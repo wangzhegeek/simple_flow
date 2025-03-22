@@ -91,39 +91,6 @@ TEST_F(MathUtilTest, VectorSum) {
     EXPECT_FLOAT_EQ(result, 15.0);
 }
 
-TEST_F(MathUtilTest, Sigmoid) {
-    Float result = MathUtil::Sigmoid(0.0);
-    EXPECT_FLOAT_EQ(result, 0.5);
-    
-    Float values[3] = {-1.0, 0.0, 1.0};
-    Float expected[3] = {
-        1.0 / (1.0 + std::exp(1.0)),
-        0.5,
-        1.0 / (1.0 + std::exp(-1.0))
-    };
-    
-    Float results[3];
-    MathUtil::Sigmoid(values, results, 3);
-    
-    for (int i = 0; i < 3; ++i) {
-        EXPECT_FLOAT_EQ(results[i], expected[i]);
-    }
-}
-
-TEST_F(MathUtilTest, LogLoss) {
-    Float pred = 0.7;
-    Float target = 1.0;
-    Float result = MathUtil::LogLoss(pred, target);
-    Float expected = -std::log(pred);
-    EXPECT_FLOAT_EQ(result, expected);
-    
-    pred = 0.3;
-    target = 0.0;
-    result = MathUtil::LogLoss(pred, target);
-    expected = -std::log(1.0 - pred);
-    EXPECT_FLOAT_EQ(result, expected);
-}
-
 class ConfigParserTest : public ::testing::Test {
 protected:
     void SetUp() override {

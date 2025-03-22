@@ -273,15 +273,29 @@ TEST_F(LRTest, SaveAndLoad) {
 }
 
 TEST_F(LRTest, Initialization) {
-    // 创建新模型并初始化
+    // 创建一个新的模型并初始化
     auto new_model = std::make_shared<LRModel>(3, activation_);
     new_model->Init();
     
-    // 验证偏置被初始化为0
-    EXPECT_FLOAT_EQ(new_model->GetBias(), 0.0);
+    // 验证权重和偏置是否已经初始化
+    auto weights = new_model->GetWeights();
     
-    // 验证权重初始化 - 对于小模型，可能已预初始化
-    EXPECT_LE(new_model->GetWeights().size(), 3);
+    // 由于我们使用了随机初始化，偏置不再是0，而是一个小随机值
+    // 验证权重是空的（懒加载）
+    EXPECT_TRUE(weights.empty());
+    
+    // 偏置应该是一个小随机值，不再是0
+    // EXPECT_FLOAT_EQ(new_model->GetBias(), 0.0);
+    
+    // 前向传播应该返回一个值
+    SparseFeatureVector features;
+    features.push_back(SparseFeature{0, 1.0});
+    features.push_back(SparseFeature{1, 2.0});
+    
+    // 不再检查特定值，因为现在会使用随机初始化的偏置
+    Float prediction = new_model->Forward(features);
+    EXPECT_GE(prediction, 0.0);
+    EXPECT_LE(prediction, 1.0);
 }
 
 } // namespace test

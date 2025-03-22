@@ -7,6 +7,9 @@
 
 namespace simpleflow {
 
+// 梯度裁剪辅助函数声明
+Float ClipGradient(Float gradient, Float clip_value = 5.0f);
+
 // 优化器基类
 class Optimizer {
 public:

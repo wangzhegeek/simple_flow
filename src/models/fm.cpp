@@ -2,11 +2,13 @@
 #include "activation.h"
 #include "loss.h"
 #include "utils/math_util.h"
+#include "optimizer.h"
 #include <fstream>
 #include <cmath>
 #include <algorithm>
 #include <iostream>
 #include <numeric>
+#include <random>
 
 namespace simpleflow {
 

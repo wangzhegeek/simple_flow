@@ -9,6 +9,17 @@ namespace simpleflow {
 // 梯度裁剪阈值 - 改为更大的值，避免过度限制梯度
 const Float GRADIENT_CLIP_THRESHOLD = 5.0f;
 
+// 梯度裁剪辅助函数
+Float ClipGradient(Float gradient, Float clip_value) {
+    // 处理NaN或Inf
+    if (std::isnan(gradient) || std::isinf(gradient)) {
+        return 0.0f;
+    }
+    
+    // 裁剪梯度值
+    return std::max(std::min(gradient, clip_value), -clip_value);
+}
+
 Optimizer::Optimizer(Float learning_rate, Float l2_reg)
     : learning_rate_(learning_rate), l2_reg_(l2_reg) {
     if (learning_rate <= 0) {
@@ -27,17 +38,6 @@ void Optimizer::Update(FloatVector& parameters, const FloatVector& gradients) {
     }
 }
 
-// 梯度裁剪辅助函数
-Float ClipGradient(Float gradient) {
-    // 处理NaN或Inf
-    if (std::isnan(gradient) || std::isinf(gradient)) {
-        return 0.0f;
-    }
-    
-    // 裁剪梯度值
-    return std::max(std::min(gradient, GRADIENT_CLIP_THRESHOLD), -GRADIENT_CLIP_THRESHOLD);
-}
-
 // SGD优化器
 SGDOptimizer::SGDOptimizer(Float learning_rate, Float l2_reg)
     : Optimizer(learning_rate, l2_reg) {
@@ -48,7 +48,7 @@ void SGDOptimizer::Update(Int index, Float gradient, Float& parameter) {
     gradient += l2_reg_ * parameter;
     
     // 梯度裁剪
-    gradient = ClipGradient(gradient);
+    gradient = ClipGradient(gradient, GRADIENT_CLIP_THRESHOLD);
     
     // 参数更新
     parameter -= learning_rate_ * gradient;
@@ -64,7 +64,7 @@ void AdagradOptimizer::Update(Int index, Float gradient, Float& parameter) {
     gradient += l2_reg_ * parameter;
     
     // 梯度裁剪
-    gradient = ClipGradient(gradient);
+    gradient = ClipGradient(gradient, GRADIENT_CLIP_THRESHOLD);
     
     // 累积平方梯度
     Float& squared_gradient = squared_gradients_[index];
@@ -84,7 +84,7 @@ void RMSPropOptimizer::Update(Int index, Float gradient, Float& parameter) {
     gradient += l2_reg_ * parameter;
     
     // 梯度裁剪
-    gradient = ClipGradient(gradient);
+    gradient = ClipGradient(gradient, GRADIENT_CLIP_THRESHOLD);
     
     // 更新缓存
     Float& cache = cache_[index];
@@ -104,7 +104,7 @@ void AdamOptimizer::Update(Int index, Float gradient, Float& parameter) {
     gradient += l2_reg_ * parameter;
     
     // 梯度裁剪
-    gradient = ClipGradient(gradient);
+    gradient = ClipGradient(gradient, GRADIENT_CLIP_THRESHOLD);
     
     // 单个参数更新时也需要更新迭代计数器
     ++t_;
@@ -140,7 +140,7 @@ void AdamOptimizer::Update(FloatVector& parameters, const FloatVector& gradients
         Float gradient = gradients[i] + l2_reg_ * parameters[i];
         
         // 梯度裁剪
-        gradient = ClipGradient(gradient);
+        gradient = ClipGradient(gradient, GRADIENT_CLIP_THRESHOLD);
         
         // 更新一阶矩估计
         Float& m = m_[i];

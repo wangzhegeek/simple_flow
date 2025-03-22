@@ -38,15 +38,6 @@ public:
     // 向量和: sum(x)
     static Float VectorSum(const Float* x, Int size);
     
-    // Sigmoid函数: 1 / (1 + exp(-x))
-    static Float Sigmoid(Float x);
-    
-    // 批量Sigmoid函数
-    static void Sigmoid(const Float* x, Float* y, Int size);
-    
-    // 计算对数损失: -y * log(p) - (1 - y) * log(1 - p)
-    static Float LogLoss(Float prediction, Float target);
-    
     // 随机初始化: 使用Xavier方法
     static void XavierInitialization(Float* weights, Int size, Int fan_in, Int fan_out);
 };

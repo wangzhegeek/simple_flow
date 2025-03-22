@@ -1,4 +1,5 @@
 #include "models/lr.h"
+#include "optimizer.h"
 #include "utils/math_util.h"
 #include <fstream>
 #include <cmath>

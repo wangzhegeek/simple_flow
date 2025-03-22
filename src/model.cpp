@@ -118,19 +118,4 @@ Float Model::CalculateGradient(Float prediction, Float label) const {
     return prediction - label;
 }
 
-Float Model::ClipGradient(Float gradient, Float clip_value) const {
-    if (std::isnan(gradient) || std::isinf(gradient)) {
-        return 0.0f;
-    }
-    
-    if (gradient > clip_value) {
-        return clip_value;
-    }
-    if (gradient < -clip_value) {
-        return -clip_value;
-    }
-    
-    return gradient;
-}
-
 } // namespace simpleflow 
