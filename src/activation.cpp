@@ -20,7 +20,22 @@ void Activation::Gradient(const FloatVector& input, const FloatVector& output, F
 }
 
 Float SigmoidActivation::Forward(Float x) const {
-    return 1.0 / (1.0 + std::exp(-x));
+    // 数值稳定版本的sigmoid实现
+    // 处理极端值，避免溢出
+    if (x > 35.0f) return 1.0f;
+    if (x < -35.0f) return 0.0f;
+    
+    // 通过更稳定的方式计算sigmoid，减少指数溢出风险
+    Float result;
+    if (x >= 0) {
+        Float e = std::exp(-x);
+        result = 1.0f / (1.0f + e);
+    } else {
+        Float e = std::exp(x);
+        result = e / (1.0f + e);
+    }
+    
+    return result;
 }
 
 Float SigmoidActivation::Gradient(Float x, Float y) const {

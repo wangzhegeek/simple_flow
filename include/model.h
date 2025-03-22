@@ -10,6 +10,21 @@
 
 namespace simpleflow {
 
+// 定义一些常用的常量
+namespace constants {
+    // 数值精度保护
+    constexpr Float EPSILON = 1e-10;
+    
+    // 梯度裁剪范围
+    constexpr Float GRAD_CLIP = 1.0;
+    
+    // 激活函数输入范围限制
+    constexpr Float MAX_SCORE = 15.0;
+    
+    // 权重范围限制
+    constexpr Float MAX_WEIGHT = 3.0;
+}
+
 // 模型基类
 class Model {
 public:
@@ -19,23 +34,26 @@ public:
     // 初始化模型参数
     virtual void Init() = 0;
     
-    // 前向传播
+    // 前向传播（预测）
     virtual Float Forward(const SparseFeatureVector& features) = 0;
     
-    // 批量前向传播
+    // 批量前向传播（优化性能）
     virtual void Forward(const Batch& batch, FloatVector& predictions);
     
-    // 反向传播更新参数
-    virtual void Backward(const SparseFeatureVector& features, Float gradient, std::shared_ptr<Optimizer> optimizer) = 0;
+    // 统一的反向传播接口
+    virtual void Backward(const SparseFeatureVector& features, 
+                          Float label, 
+                          Float prediction, 
+                          std::shared_ptr<Optimizer> optimizer) = 0;
     
     // 批量反向传播
     virtual void Backward(const Batch& batch, const FloatVector& gradients, std::shared_ptr<Optimizer> optimizer);
     
     // 保存模型
-    virtual void Save(const String& file_path) const;
+    virtual void Save(const String& file_path) const = 0;
     
     // 加载模型
-    virtual void Load(const String& file_path);
+    virtual void Load(const String& file_path) = 0;
     
     // 获取特征维度
     Int GetFeatureDim() const { return feature_dim_; }
@@ -60,6 +78,12 @@ public:
 protected:
     Int feature_dim_;
     std::shared_ptr<Activation> activation_;
+    
+    // 计算梯度的辅助方法
+    Float CalculateGradient(Float prediction, Float label) const;
+    
+    // 梯度裁剪辅助方法
+    Float ClipGradient(Float gradient, Float clip_value = constants::GRAD_CLIP) const;
 };
 
 // 类型转换辅助函数（用于兼容测试）

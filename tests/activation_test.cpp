@@ -62,16 +62,37 @@ TEST_F(ActivationTest, IdentityGradient) {
 
 TEST_F(ActivationTest, SigmoidForward) {
     for (Float input : inputs_) {
-        Float expected = 1.0 / (1.0 + std::exp(-input));
+        // 测试标准输入范围的sigmoid值
+        Float expected;
+        if (input >= 0) {
+            Float e = std::exp(-input);
+            expected = 1.0f / (1.0f + e);
+        } else {
+            Float e = std::exp(input);
+            expected = e / (1.0f + e);
+        }
         EXPECT_FLOAT_EQ(sigmoid_->Forward(input), expected);
     }
+    
+    // 测试极端值
+    EXPECT_FLOAT_EQ(sigmoid_->Forward(35.0f), 1.0f);
+    EXPECT_FLOAT_EQ(sigmoid_->Forward(-35.0f), 0.0f);
+    EXPECT_FLOAT_EQ(sigmoid_->Forward(100.0f), 1.0f);
+    EXPECT_FLOAT_EQ(sigmoid_->Forward(-100.0f), 0.0f);
     
     FloatVector outputs;
     sigmoid_->Forward(inputs_, outputs);
     
     ASSERT_EQ(outputs.size(), inputs_.size());
     for (size_t i = 0; i < inputs_.size(); ++i) {
-        Float expected = 1.0 / (1.0 + std::exp(-inputs_[i]));
+        Float expected;
+        if (inputs_[i] >= 0) {
+            Float e = std::exp(-inputs_[i]);
+            expected = 1.0f / (1.0f + e);
+        } else {
+            Float e = std::exp(inputs_[i]);
+            expected = e / (1.0f + e);
+        }
         EXPECT_FLOAT_EQ(outputs[i], expected);
     }
 }

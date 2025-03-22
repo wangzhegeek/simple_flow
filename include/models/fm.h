@@ -21,11 +21,11 @@ public:
     // 前向传播
     Float Forward(const SparseFeatureVector& features) override;
     
-    // 反向传播更新参数
-    void Backward(const SparseFeatureVector& features, Float pred, Float target, Optimizer* optimizer);
-    
-    // 原来的接口，保持兼容性
-    void Backward(const SparseFeatureVector& features, Float gradient, std::shared_ptr<Optimizer> optimizer) override;
+    // 统一的反向传播接口
+    void Backward(const SparseFeatureVector& features, 
+                 Float label, 
+                 Float prediction, 
+                 std::shared_ptr<Optimizer> optimizer) override;
     
     // 保存模型
     void Save(const String& file_path) const override;
@@ -69,6 +69,12 @@ private:
     
     // 计算二阶特征交互
     Float ComputeSecondOrderInteraction(const SparseFeatureVector& features);
+    
+    // 确保特征嵌入存在，如果不存在则创建
+    void EnsureEmbeddingExists(Int index);
+    
+    // 裁剪嵌入值到合理范围
+    void ClipEmbedding(std::vector<Float>& embedding);
 };
 
 } // namespace simpleflow

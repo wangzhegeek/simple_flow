@@ -49,11 +49,7 @@ AUCMetric::AUCMetric() {
 }
 
 void AUCMetric::Add(Float prediction, Float target) {
-    // Gisette数据集中标签可能是-1和1，而不是0和1
-    // 我们需要将-1视为负类，1视为正类
-    Int label = (target > 0) ? 1 : 0;
-    
-    predictions_.emplace_back(prediction, label);
+    predictions_.emplace_back(prediction, target);
 }
 
 void AUCMetric::Add(const FloatVector& predictions, const FloatVector& targets) {
@@ -120,10 +116,15 @@ Float AUCMetric::CalculateAUC() const {
         }
     }
     
-    // 归一化AUC
-    auc /= (num_positives * num_negatives);
+    // 使用安全的方式归一化AUC，避免整数溢出
+    // 将整数转换为double类型进行计算
+    double pos_d = static_cast<double>(num_positives);
+    double neg_d = static_cast<double>(num_negatives);
+    double denominator = pos_d * neg_d;
+    // 计算最终AUC值
+    Float final_auc = static_cast<Float>(static_cast<double>(auc) / denominator);
     
-    return auc;
+    return final_auc;
 }
 
 // 对数损失指标

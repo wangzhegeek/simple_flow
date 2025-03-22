@@ -31,34 +31,17 @@ void Model::Backward(const Batch& batch, const FloatVector& gradients, std::shar
         throw std::runtime_error("Batch size and gradients size mismatch");
     }
     
-    // 获取模型类名，检查是否为FMModel
-    bool is_fm_model = false;
-    try {
-        auto* fm_model = dynamic_cast<FMModel*>(this);
-        is_fm_model = (fm_model != nullptr);
-    } catch (...) {
-        is_fm_model = false;
+    // 先获取预测值
+    FloatVector predictions;
+    predictions.resize(batch.size());
+    for (size_t i = 0; i < batch.size(); ++i) {
+        predictions[i] = Forward(batch[i].features);
     }
     
-    // 如果是FMModel，尝试用新接口
-    if (is_fm_model) {
-        // 先获取预测值
-        FloatVector predictions;
-        predictions.resize(batch.size());
-        for (size_t i = 0; i < batch.size(); ++i) {
-            predictions[i] = Forward(batch[i].features);
-        }
-        
-        // 使用模型的新接口，直接传入预测值和标签
-        auto* fm_model = dynamic_cast<FMModel*>(this);
-        for (size_t i = 0; i < batch.size(); ++i) {
-            fm_model->Backward(batch[i].features, predictions[i], batch[i].label, optimizer.get());
-        }
-    } else {
-        // 其他模型使用原有接口
-        for (size_t i = 0; i < batch.size(); ++i) {
-            Backward(batch[i].features, gradients[i], optimizer);
-        }
+    // 对每个样本执行反向传播
+    for (size_t i = 0; i < batch.size(); ++i) {
+        // 统一使用新的反向传播接口
+        Backward(batch[i].features, batch[i].label, predictions[i], optimizer);
     }
 }
 
@@ -120,6 +103,34 @@ std::shared_ptr<Model> Model::Create(ModelType type, Int feature_dim, const std:
         default:
             throw std::runtime_error("Unknown model type");
     }
+}
+
+Float Model::CalculateGradient(Float prediction, Float label) const {
+    // 防止数值溢出
+    if (prediction > 1.0f - constants::EPSILON) {
+        prediction = 1.0f - constants::EPSILON;
+    }
+    if (prediction < constants::EPSILON) {
+        prediction = constants::EPSILON;
+    }
+    
+    // 计算二分类对数损失梯度 (p - y)
+    return prediction - label;
+}
+
+Float Model::ClipGradient(Float gradient, Float clip_value) const {
+    if (std::isnan(gradient) || std::isinf(gradient)) {
+        return 0.0f;
+    }
+    
+    if (gradient > clip_value) {
+        return clip_value;
+    }
+    if (gradient < -clip_value) {
+        return -clip_value;
+    }
+    
+    return gradient;
 }
 
 } // namespace simpleflow 

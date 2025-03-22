@@ -20,8 +20,14 @@ public:
     // 前向传播
     Float Forward(const SparseFeatureVector& features) override;
     
-    // 反向传播更新参数
-    void Backward(const SparseFeatureVector& features, Float gradient, std::shared_ptr<Optimizer> optimizer) override;
+    // 批量前向传播（优化版本）
+    void Forward(const Batch& batch, FloatVector& predictions) override;
+    
+    // 统一的反向传播接口
+    void Backward(const SparseFeatureVector& features, 
+                 Float label, 
+                 Float prediction, 
+                 std::shared_ptr<Optimizer> optimizer) override;
     
     // 保存模型
     void Save(const String& file_path) const override;

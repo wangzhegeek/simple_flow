@@ -125,18 +125,6 @@ void Trainer::Train(std::shared_ptr<DataReader> train_reader, std::shared_ptr<Da
                     no_improvement_count = 0;
                 } else {
                     ++no_improvement_count;
-                    
-                    // 如果连续多轮没有改善，考虑降低学习率，更温和的策略
-                    if (no_improvement_count >= 3) { // 需要更多轮次来确认没有提升
-                        Float current_lr = optimizer_->GetLearningRate();
-                        Float new_lr = current_lr * 0.8f; // 更温和的降低
-                        
-                        if (new_lr >= min_learning_rate_) {
-                            optimizer_->SetLearningRate(new_lr);
-                            std::cout << "验证指标未提升，降低学习率至: " << new_lr << std::endl;
-                            no_improvement_count = 0;
-                        }
-                    }
                 }
             }
         }
@@ -189,16 +177,15 @@ Float Trainer::TrainEpoch(std::shared_ptr<DataReader> train_reader, Int current_
         FloatVector predictions;
         model_->Forward(batch, predictions);
         
-        // 计算标签，将-1转换为0，适应sigmoid激活函数
-        FloatVector targets(batch.size());
+        // 为指标计算准备标签
+        FloatVector labels(batch.size());
         for (size_t i = 0; i < batch.size(); ++i) {
-            // 转换标签，-1 -> 0, 1 -> 1
-            targets[i] = (batch[i].label == -1) ? 0.0f : batch[i].label;
+            labels[i] = batch[i].label;
         }
         
         // 更新指标
         for (auto& metric : metrics_) {
-            metric->Add(predictions, targets);
+            metric->Add(predictions, labels);
         }
         
         if (verbose_ > 0 && batch_count % log_interval_ == 0) {
@@ -236,11 +223,10 @@ Float Trainer::TrainBatch(const Batch& batch) {
     FloatVector predictions;
     model_->Forward(batch, predictions);
     
-    // 计算标签，将-1转换为0，适应sigmoid激活函数
+    // 不再需要转换标签，现在标签统一为0/1格式
     FloatVector targets(batch.size());
     for (size_t i = 0; i < batch.size(); ++i) {
-        // 转换标签，-1 -> 0, 1 -> 1
-        targets[i] = (batch[i].label == -1) ? 0.0f : batch[i].label;
+        targets[i] = batch[i].label;
     }
     
     // 检查预测值是否在合理范围内（对于二分类问题）
@@ -307,11 +293,10 @@ void Trainer::Evaluate(std::shared_ptr<DataReader> data_reader, const std::vecto
         FloatVector predictions;
         model_->Forward(batch, predictions);
         
-        // 计算标签，将-1转换为0，适应sigmoid激活函数
+        // 不再需要转换标签，直接使用标签值
         FloatVector targets(batch.size());
         for (size_t i = 0; i < batch.size(); ++i) {
-            // 转换标签，-1 -> 0, 1 -> 1
-            targets[i] = (batch[i].label == -1) ? 0.0f : batch[i].label;
+            targets[i] = batch[i].label;
         }
         
         // 更新所有指标
